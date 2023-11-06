@@ -31,6 +31,19 @@ export class usersEntity extends baseEntity {
     @OneToMany(() => productEntity, (pro) => pro.user)
     products: productEntity[]
 
+    @Column({ default: false })
+    passwordChanged: boolean
+
+
+    @Column({ nullable: true, unique: true })
+    verificationCode: string
+
+    @Column({ nullable: true, unique: true })
+    passwordChangeToken: string
+
+    @Column({ nullable: true })
+    tokenExpirationTime: string
+
 
     @ManyToOne(() => rolesEntity, (role) => role.users)
     role: rolesEntity

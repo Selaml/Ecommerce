@@ -102,10 +102,10 @@ export class UsersController {
         return await this.userService.updateUser(id, updateDto)
     }
 
-    @Post("resset")
-    async resetPassword(ressetPasswordeDto: RessetPasswordeDto): Promise<any> {
+    @Post('resset')
+    async forgotPassword(@Body() ressetPasswordeDto: RessetPasswordeDto): Promise<any> {
 
-
+        console.log(ressetPasswordeDto, "kk")
         return await this.userService.ressetPassword(ressetPasswordeDto)
     }
 

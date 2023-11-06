@@ -20,10 +20,15 @@ import { IMG_URL } from 'src/const/common';
 import { hashPassword } from 'src/Utils/hashPassword';
 import { UsersUpdateDto } from 'src/Dto/users/users-update-dto';
 import { RessetPasswordeDto } from 'src/Dto/users/reste-password-dto';
+import { generateVerivicationcode } from 'src/Utils/genereteverificationcode';
+import { emailsend } from 'src/Utils/sendemail';
+import { MailerService } from '@nestjs-modules/mailer';
+
 @Injectable()
 export class UsersService implements IUserServiceInterface {
     constructor(@InjectRepository(usersEntity) private readonly usersrepo: userrepository,
-        @InjectRepository(rolesEntity) private readonly roleRepo: Repository<rolesEntity>) { }
+        @InjectRepository(rolesEntity) private readonly roleRepo: Repository<rolesEntity>,
+        private readonly mailerService: MailerService,) { }
 
 
 
@@ -31,7 +36,45 @@ export class UsersService implements IUserServiceInterface {
         try {
             const userExists = await this.getusers(resetPasswordDto.email)
             if (userExists) {
-                //send email
+                const ressetToken = await generrateToken(userExists.id, process.env.JWT_SECRET)
+                const verificationCode = await generateVerivicationcode()
+                console.log(userExists, "ll")
+                const id = userExists.id
+                //  console.log(userExists., "ff")
+                const updateUser = await this.usersrepo.update(userExists.user.id, {
+
+                    passwordChangeToken: ressetToken,
+                    verificationCode: verificationCode,
+                    tokenExpirationTime: "2h",
+                    passwordChanged: true,
+
+
+                })
+
+                console.log(updateUser, "up")
+
+
+                const sendemails = await emailsend.sendEmail(this.mailerService, process.env.SYSTEM_EMAIL,
+                    userExists.user.email,
+                    "[IE Networks Solutions] Password Reset E-mail",
+                    `<h2>Hello ${userExists.user.name} </h2>
+      <p> You're receiving this e-mail because you or someone else has requested a password reset for your user account.</p>
+      <h4>Click the link below to reset your password:</h4>
+    <a href="http://172.16.32.114:5173/verification/${userExists.user.id}">Click here to change your default password</a>
+    <p> Your verification code is <strong> ${userExists.user.verificationCode}</strong></p>
+       
+       <p>If you did not request a password reset you can safely ignore this email.</p?
+    <p>Thank you!</p>`,
+
+                );
+                console.log(sendemails, "llop")
+                if (sendemails) {
+                    return await "sent"
+
+
+                }
+                return new HttpException("somehting went wrong", HttpStatus.BAD_REQUEST)
+
             }
 
         } catch (error) {
@@ -96,6 +139,7 @@ export class UsersService implements IUserServiceInterface {
 
             }
             else {
+                console.log(file, "file")
 
                 const imagePath = file.path.replace(/\\/g, '/')
                 const userRole = await this.roleRepo.findOne({ where: { roleName: "user" } })
@@ -169,12 +213,12 @@ export class UsersService implements IUserServiceInterface {
             }
             else {
 
-                const cheakPassword = await ComparePassword(authDto.password, user.password)
+                const cheakPassword = await ComparePassword(authDto.password, user.user.password)
 
 
 
                 if (cheakPassword) {
-                    const token = await generrateToken(user.id, process.env.JWT_SECRET)
+                    const token = await generrateToken(user.user.id, process.env.JWT_SECRET)
                     return {
                         message: "Successfuly loggedIn",
                         user: user,
@@ -246,6 +290,10 @@ export class UsersService implements IUserServiceInterface {
 
         }
     }
+
+
+
+
 
 }
 
