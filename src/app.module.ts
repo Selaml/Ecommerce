@@ -29,6 +29,8 @@ import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
       }),
       MailerModule.forRoot({
         transport: {
+          service: "gmail",
+
 
 
           host: String(process.env.MAIL_HOST),
@@ -37,12 +39,11 @@ import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
             user: process.env.MAIL_USER,
             pass: process.env.MAIL_PASS,
           },
-          secure: false, // Set to true for secure connections (TLS/SSL)
-          ignoreTLS: false, // This is not needed, as secure: false implies no TLS
-          // The tls option to control TLS behavior
+          secure: false,
+          ignoreTLS: false,
+
           tls: {
-            rejectUnauthorized: true, // Set to true to reject unauthorized certificates (for secure connections)
-            // Other TLS options can be added here as needed
+            rejectUnauthorized: true,
           },
         },
       }),

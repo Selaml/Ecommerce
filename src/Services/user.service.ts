@@ -23,6 +23,8 @@ import { RessetPasswordeDto } from 'src/Dto/users/reste-password-dto';
 import { generateVerivicationcode } from 'src/Utils/genereteverificationcode';
 import { emailsend } from 'src/Utils/sendemail';
 import { MailerService } from '@nestjs-modules/mailer';
+import { VerificationCodeDto } from 'src/Dto/users/verify-verificationcode-dto';
+import { NewPasswordDto } from 'src/Dto/users/user-newpassword-dto';
 
 @Injectable()
 export class UsersService implements IUserServiceInterface {
@@ -30,6 +32,58 @@ export class UsersService implements IUserServiceInterface {
         @InjectRepository(rolesEntity) private readonly roleRepo: Repository<rolesEntity>,
         private readonly mailerService: MailerService,) { }
 
+
+
+    async newPassword(id: string, newPasswordDto: NewPasswordDto): Promise<any> {
+        try {
+            const user = await this.getuserById(id)
+            if (user) {
+                const checkPassword = newPasswordDto.newPassword == newPasswordDto.ConfirmPasword
+                if (checkPassword) {
+                    const password = await hashPassword(newPasswordDto.newPassword)
+                    const createUser = await this.usersrepo.update(id, {
+                        password: password
+
+                    })
+                    return user
+
+                }
+                return await new HttpException("new password and confirm password dosent match", HttpStatus.BAD_REQUEST)
+            }
+            else {
+                return await new HttpException("user not found", HttpStatus.BAD_REQUEST)
+
+            }
+
+        } catch (error) {
+            return await new HttpException("something went wrong", HttpStatus.BAD_REQUEST)
+
+        }
+    }
+
+
+
+
+    async verifyCode(id: string, verificationCodeDto: VerificationCodeDto): Promise<any> {
+        try {
+            const user = await this.getuserById(id)
+            if ((user as any).user.verificationCode === verificationCodeDto.verification) {
+                return {
+                    status: 200,
+                    msg: "succesfull",
+                    user: user
+                }
+
+            }
+            else {
+
+                return await new HttpException("wrong verification code", HttpStatus.BAD_REQUEST)
+            }
+
+        } catch (error) {
+            return await new HttpException(error.message, HttpStatus.BAD_REQUEST)
+        }
+    }
 
 
     async ressetPassword(resetPasswordDto: RessetPasswordeDto): Promise<any> {
@@ -67,15 +121,20 @@ export class UsersService implements IUserServiceInterface {
     <p>Thank you!</p>`,
 
                 );
-                console.log(sendemails, "llop")
-                if (sendemails) {
-                    return await "sent"
 
+                if (sendemails) {
+
+                    return "email is sent "
 
                 }
                 return new HttpException("somehting went wrong", HttpStatus.BAD_REQUEST)
 
             }
+
+
+
+
+
 
         } catch (error) {
             return await new HttpException(error.message, HttpStatus.BAD_REQUEST)
@@ -104,13 +163,9 @@ export class UsersService implements IUserServiceInterface {
             const user = await this.usersrepo.findOne({
                 where: { id: id, isDeleted: false }, relations: ['role', 'role.permissions']
             })
-
-
             if (!user) {
                 return new HttpException("user not found", HttpStatus.NOT_FOUND)
             }
-
-
             return {
                 message: "Success",
                 status: 200,

@@ -7,10 +7,12 @@ import { diskStorage } from 'multer';
 import * as path from 'path';
 import { AuthenticationDto } from 'src/Dto/users/auth-dto';
 import { RessetPasswordeDto } from 'src/Dto/users/reste-password-dto';
+import { NewPasswordDto } from 'src/Dto/users/user-newpassword-dto';
 
 import { UsersPresentDto } from 'src/Dto/users/user-present-dto';
 import { UsersCreateDto } from 'src/Dto/users/users-crate-Dto';
 import { UsersUpdateDto } from 'src/Dto/users/users-update-dto';
+import { VerificationCodeDto } from 'src/Dto/users/verify-verificationcode-dto';
 import { AuthenticationServise } from 'src/Services/authentication.servise';
 import { UsersService } from 'src/Services/user.service';
 
@@ -107,6 +109,21 @@ export class UsersController {
 
         console.log(ressetPasswordeDto, "kk")
         return await this.userService.ressetPassword(ressetPasswordeDto)
+    }
+
+    @Post('verification/:id')
+    async verifyResetCode(@Param('id') id: string, @Body() verificationCodeDto: VerificationCodeDto): Promise<any> {
+
+        return await this.userService.verifyCode(id, verificationCodeDto)
+    }
+
+
+
+
+    @Post('newpassword/:id')
+    async newPassword(@Param('id') id: string, @Body() newPasswordDto: NewPasswordDto): Promise<any> {
+
+        return await this.userService.newPassword(id, newPasswordDto)
     }
 
 

@@ -7,28 +7,17 @@ export class emailsend {
         from: string,
         to: string,
         subject: string,
-
         body: string,
-
     ): Promise<any> {
-
         await mailerService.sendMail({
-            from: "selamawitlb@gmail.com",
-            to: "getanehselam8@gmail.com",
+            from: '"No Reply" <getanehselam8@gmail.com>',
+            replyTo: "noreply@example.com",
+            to: to,
             subject: subject,
-
             html: body,
-
         })
-            .then(() => {
-                console.log('Email sent');
-            })
-            .catch((e) => {
-                console.log('Error sending email', e);
-            });
+        return "email sent"
     };
-
-
 }
 
 
