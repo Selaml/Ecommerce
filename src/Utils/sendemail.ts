@@ -10,7 +10,7 @@ export class emailsend {
         body: string,
     ): Promise<any> {
         await mailerService.sendMail({
-            from: '"No Reply" <getanehselam8@gmail.com>',
+            from: '"No Reply" <noreply@example.com>',
             replyTo: "noreply@example.com",
             to: to,
             subject: subject,
